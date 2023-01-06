@@ -20,6 +20,12 @@ class TestEndpoint(private val messageSender: MessageSender) {
     @GetMapping("/send-message-for-queue-with-waiting", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun sendMessageForQueueWithWaiting(@RequestParam texto: String, @RequestParam numeroDeParadas: Int): ResponseEntity<String> {
         messageSender.sendMessageToDelayedQueue(texto, numeroDeParadas)
-        return ResponseEntity.ok("Mensagem com aguardo enviada enviada")
+        return ResponseEntity.ok("Mensagem com aguardo enviada")
+    }
+
+    @GetMapping("/send-message-for-queue-with-dlq", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun sendMessageForQueueWithDLQ(@RequestParam texto: String, @RequestParam numeroDeParadas: Int): ResponseEntity<String> {
+        messageSender.sendMessageToQueueWithDLQ(texto, numeroDeParadas)
+        return ResponseEntity.ok("Mensagem com dlq enviada")
     }
 }
