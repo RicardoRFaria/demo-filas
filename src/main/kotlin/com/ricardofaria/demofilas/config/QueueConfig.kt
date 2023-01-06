@@ -1,53 +1,32 @@
 package com.ricardofaria.demofilas.config
 
-import com.ricardofaria.demofilas.SimpleReceiver
-import org.springframework.amqp.core.Binding
-import org.springframework.amqp.core.BindingBuilder
-import org.springframework.amqp.core.Queue
-import org.springframework.amqp.core.TopicExchange
-import org.springframework.amqp.rabbit.connection.ConnectionFactory
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer
-import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.sqs.SqsClient
+import java.net.URI
 
-@Service
-class QueueConfig {
+@Configuration
+class QueueConfig(@Value("\${aws.region}") private val region: String,
+                  @Value("\${aws.accessKeyId}") private val accessKeyId: String,
+                  @Value("\${aws.secretKey}") private val secretAccessKey: String,
+                  @Value("\${aws.localstack.endpoint}") private val localstackEndpoint: String) {
 
-    companion object {
-        const val TOPIC_EXCHANGE_NAME = "simple-exchange"
-        const val QUEUE_NAME = "simple-queue"
-    }
-
-    @Bean("simpleQueue")
-    fun queue(): Queue {
-        return Queue(QUEUE_NAME, false)
+    @Bean
+    fun awsCredentialsProvider(): AwsCredentialsProvider {
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretAccessKey))
     }
 
     @Bean
-    fun exchange(): TopicExchange {
-        return TopicExchange(TOPIC_EXCHANGE_NAME)
+    fun sqsClient(awsCredentialsProvider: AwsCredentialsProvider): SqsClient {
+        return SqsClient.builder()
+                .endpointOverride(URI.create(localstackEndpoint))
+                .region(Region.of(region)).credentialsProvider(awsCredentialsProvider).build()
     }
-
-    @Bean
-    fun binding(queue: Queue, exchange: TopicExchange): Binding {
-        return BindingBuilder.bind(queue).to(exchange).with("foo.bar.#")
-    }
-
-    @Bean
-    fun container(connectionFactory: ConnectionFactory,
-                  listenerAdapter: MessageListenerAdapter): SimpleMessageListenerContainer {
-        val container = SimpleMessageListenerContainer()
-        container.connectionFactory = connectionFactory
-        container.setQueueNames(QUEUE_NAME)
-        container.setMessageListener(listenerAdapter)
-        return container
-    }
-
-    @Bean
-    fun listenerAdapter(simpleReceiver: SimpleReceiver): MessageListenerAdapter {
-        return MessageListenerAdapter(simpleReceiver, "receiveMessage")
-    }
-
 
 }

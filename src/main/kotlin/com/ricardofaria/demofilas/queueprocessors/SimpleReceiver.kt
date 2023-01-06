@@ -1,4 +1,4 @@
-package com.ricardofaria.demofilas
+package com.ricardofaria.demofilas.queueprocessors
 
 import org.springframework.stereotype.Service
 
