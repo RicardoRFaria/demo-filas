@@ -25,3 +25,13 @@ services:
     volumes:
       - "${TMPDIR:-/tmp}/localstack:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+  postgres:
+    image: postgres:latest
+    volumes:
+      - ./dbschemas/schemas.sql:/docker-entrypoint-initdb.d/01_schemas.sql
+      - ./dbschemas/datatoinit.sql:/docker-entrypoint-initdb.d/02_datatoinit.sql
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - "5432:5432"

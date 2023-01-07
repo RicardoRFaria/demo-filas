@@ -1,4 +1,4 @@
-package com.ricardofaria.demofilas
+package com.ricardofaria.demofilas.endpoints
 
 import com.ricardofaria.demofilas.queuesender.MessageSender
 import org.springframework.http.MediaType
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam
 
 
 @Controller
-class TestEndpoint(private val messageSender: MessageSender) {
+class MessagesTestEndpoint(private val messageSender: MessageSender) {
 
     @GetMapping("/send-simple-message", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun sendSimpleMessage(@RequestParam texto: String): ResponseEntity<String> {
