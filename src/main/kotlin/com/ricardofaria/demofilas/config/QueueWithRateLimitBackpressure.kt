@@ -20,13 +20,13 @@ import java.lang.Thread.sleep
 
 @Configuration
 class QueueWithRateLimitBackpressure(@Value("\${aws.sqs.queuewithbackpressure}") private val queueWithBackpressure: String,
-                                     private val rateLimiter: RateLimiter,
+                                     rateLimiter: RateLimiter,
                                      private val sqsClient: SqsClient,
                                      private val simpleReceiver: SimpleReceiver) {
 
     private val rateLimitBackpressure = RateLimitBackpressure(queueWithBackpressure, rateLimiter)
 
-    @Bean("simplequeue")
+    @Bean("queuewithratelimitbackpressure")
     fun createQueue() {
         val createQueueRequest = CreateQueueRequest.builder().queueName(queueWithBackpressure).attributes(
                 mapOf(QueueAttributeName.VISIBILITY_TIMEOUT to "10")

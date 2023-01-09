@@ -22,7 +22,7 @@ class QueueWithBackpressure(@Value("\${aws.sqs.queuewithbackpressure}") private 
                             private val sqsClient: SqsClient,
                             private val simpleReceiver: SimpleReceiver) {
 
-    @Bean("simplequeue")
+    @Bean("queuewithbackpressure")
     fun createQueue() {
         val createQueueRequest = CreateQueueRequest.builder().queueName(queueWithBackpressure).attributes(
                 mapOf(QueueAttributeName.VISIBILITY_TIMEOUT to "10")
