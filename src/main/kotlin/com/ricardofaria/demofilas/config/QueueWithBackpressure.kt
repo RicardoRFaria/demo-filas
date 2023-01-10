@@ -18,7 +18,7 @@ import java.lang.Thread.sleep
 
 @Configuration
 class QueueWithBackpressure(@Value("\${aws.sqs.queuewithbackpressure}") private val queueWithBackpressure: String,
-                            @Qualifier("apphealthybackpressure") private val backpressure: Backpressure,
+                            @Qualifier("dbhealthybackpressure") private val backpressure: Backpressure,
                             private val sqsClient: SqsClient,
                             private val simpleReceiver: SimpleReceiver) {
 

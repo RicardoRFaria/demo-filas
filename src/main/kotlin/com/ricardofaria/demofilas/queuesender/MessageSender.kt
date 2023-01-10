@@ -12,7 +12,9 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 class MessageSender(private val sqsClient: SqsClient,
                     @Value("\${aws.sqs.simplesqswithconsuming.url}") private val simpleSqsWithConsuming: String,
                     @Value("\${aws.sqs.queuewithdelay.url}") private val queueWithDelay: String,
-                    @Value("\${aws.sqs.queuewithdlq.url}") private val queueWithDLQ: String) {
+                    @Value("\${aws.sqs.queuewithdlq.url}") private val queueWithDLQ: String,
+                    @Value("\${aws.sqs.queuewithbackpressure}") private val queueWithBackpressure: String,
+                    @Value("\${aws.sqs.queuewithratelimit}") private val queueWithRateLimit: String) {
 
     fun sendSimpleMessage(texto: String) {
         println("Enviando mensagem com o texto recebido: $texto")
@@ -46,6 +48,24 @@ class MessageSender(private val sqsClient: SqsClient,
                 .build()
         sqsClient.sendMessage(messageRequest)
         println("Mensagem da fila com DLQ enviada")
+    }
+
+    fun sendMessageForQueueWithHealthCheckBackpressure(texto: String) {
+        sendTextMessage(texto, queueWithBackpressure)
+        println("Mensagem enviada: <$texto> para a fila com health check backpressure")
+    }
+
+    fun sendMessageForQueueWithRateLimit(texto: String) {
+        sendTextMessage(texto, queueWithRateLimit)
+        println("Mensagem enviada: <$texto> para a fila com rate limit")
+    }
+
+    fun sendTextMessage(text: String, queue: String) {
+        val messageRequest = SendMessageRequest.builder()
+                .queueUrl(queue)
+                .messageBody(text)
+                .build()
+        sqsClient.sendMessage(messageRequest)
     }
 
 }

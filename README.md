@@ -14,3 +14,11 @@ http://localhost:8080/send-message-for-queue-with-waiting?texto=meu-texto-que-nu
 Para o endpoint que falha no consumo, mas tem DLQ
 
 http://localhost:8080/send-message-for-queue-with-dlq?texto=minha-mensagem-que-e-consumida&numeroDeParadas=5
+
+Para o endpoint que tem backpressure baseado em estado da tabase
+
+http://localhost:8080/send-message-for-queue-with-health-check-backpressure?texto=Mensagemcombackpressure
+
+Para o endpoint que tem rate limit
+
+http://localhost:8080/send-message-for-queue-with-rate-limit?texto=Mensagemcomratelimit1

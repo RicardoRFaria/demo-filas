@@ -1,10 +1,8 @@
 package com.ricardofaria.demofilas.config
 
-import com.ricardofaria.demofilas.backpressure.Backpressure
 import com.ricardofaria.demofilas.backpressure.RateLimitBackpressure
 import com.ricardofaria.demofilas.queueprocessors.SimpleReceiver
 import com.ricardofaria.demofilas.ratelimiter.RateLimiter
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
@@ -19,16 +17,16 @@ import java.lang.Exception
 import java.lang.Thread.sleep
 
 @Configuration
-class QueueWithRateLimitBackpressure(@Value("\${aws.sqs.queuewithbackpressure}") private val queueWithBackpressure: String,
-                                     rateLimiter: RateLimiter,
+class QueueWithRateLimitBackpressure(@Value("\${aws.sqs.queuewithratelimit}") private val queueName: String,
+                                     private val rateLimiter: RateLimiter,
                                      private val sqsClient: SqsClient,
                                      private val simpleReceiver: SimpleReceiver) {
 
-    private val rateLimitBackpressure = RateLimitBackpressure(queueWithBackpressure, rateLimiter)
+    private val rateLimitBackpressure = RateLimitBackpressure(queueName, rateLimiter)
 
     @Bean("queuewithratelimitbackpressure")
     fun createQueue() {
-        val createQueueRequest = CreateQueueRequest.builder().queueName(queueWithBackpressure).attributes(
+        val createQueueRequest = CreateQueueRequest.builder().queueName(queueName).attributes(
                 mapOf(QueueAttributeName.VISIBILITY_TIMEOUT to "10")
         ).build()
         sqsClient.createQueue(createQueueRequest)
@@ -45,12 +43,14 @@ class QueueWithRateLimitBackpressure(@Value("\${aws.sqs.queuewithbackpressure}")
                     println("aguardando para consumir mensagens, pois o backpressure com rate limit nao permitiu prosseguir")
                     sleep(5000)
                 }
-                val queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueWithBackpressure).build()).queueUrl()
+                val queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl()
                 val receiveMessageRequest = ReceiveMessageRequest.builder().queueUrl(queueUrl).maxNumberOfMessages(10).build()
                 val receiveMessage = sqsClient.receiveMessage(receiveMessageRequest)
                 if (receiveMessage.hasMessages()) {
                     receiveMessage.messages().forEach { message ->
                         try {
+                            // increment on every message received
+                            rateLimiter.increment(queueName)
                             simpleReceiver.receiveMessage(message.body())
                             sqsClient.deleteMessage { it.queueUrl(queueUrl).receiptHandle(message.receiptHandle()) }
                         } catch (e: Exception) {
@@ -58,6 +58,8 @@ class QueueWithRateLimitBackpressure(@Value("\${aws.sqs.queuewithbackpressure}")
                             e.printStackTrace()
                         }
                     }
+                } else {
+                    sleep(10000)
                 }
                 sleep(1000)
             }

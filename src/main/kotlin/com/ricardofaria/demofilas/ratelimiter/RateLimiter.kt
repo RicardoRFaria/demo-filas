@@ -12,7 +12,10 @@ class RateLimiter(private val qualquerInterfaceExterna: QualquerInterfaceExterna
     }
 
     fun canProceed(queueName: String): Boolean {
-        return qualquerInterfaceExterna.getValue(buildKey(queueName)) <= getQueueRateLimitThreshold()
+        val key = buildKey(queueName)
+        val valor = qualquerInterfaceExterna.getValue(key)
+        println("Verificando o rate limit da chave $key, valor atual: $valor")
+        return valor <= getQueueRateLimitThreshold()
     }
 
     private fun getQueueRateLimitThreshold(): Int {
@@ -20,7 +23,18 @@ class RateLimiter(private val qualquerInterfaceExterna: QualquerInterfaceExterna
     }
 
     private fun buildKey(queueName: String): String {
-        return "rlcount:$queueName:${LocalDateTime.now().minute}"
+        val minute = LocalDateTime.now().minute
+        val splitByOnEveryFive = if (minute == MINUTE_ZERO) {
+            MINUTE_ZERO
+        } else {
+            minute / NUMBER_TO_GENERATE_12_TIME_WINDOWS
+        }
+        return "rlcount:$queueName:$splitByOnEveryFive"
+    }
+
+    companion object {
+        const val MINUTE_ZERO = 0
+        const val NUMBER_TO_GENERATE_12_TIME_WINDOWS = 5
     }
 
 }

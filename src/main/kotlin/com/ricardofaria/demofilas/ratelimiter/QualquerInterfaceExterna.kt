@@ -10,7 +10,7 @@ class QualquerInterfaceExterna {
 
     fun increment(key: String) {
         if (!rateLimitMemory.containsKey(key)) {
-            rateLimitMemory[key] = AtomicInteger(1);
+            rateLimitMemory[key] = AtomicInteger(0);
         }
         rateLimitMemory[key]?.incrementAndGet()
     }

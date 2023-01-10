@@ -28,4 +28,16 @@ class MessagesTestEndpoint(private val messageSender: MessageSender) {
         messageSender.sendMessageToQueueWithDLQ(texto, numeroDeParadas)
         return ResponseEntity.ok("Mensagem com dlq enviada")
     }
+
+    @GetMapping("/send-message-for-queue-with-health-check-backpressure", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun sendMessageForQueueWithHealthCheckBackpressure(@RequestParam texto: String): ResponseEntity<String> {
+        messageSender.sendMessageForQueueWithHealthCheckBackpressure(texto)
+        return ResponseEntity.ok("Mensagem para queue com health check backpressure enviada")
+    }
+
+    @GetMapping("/send-message-for-queue-with-rate-limit", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun sendMessageForQueueWithRateLimit(@RequestParam texto: String): ResponseEntity<String> {
+        messageSender.sendMessageForQueueWithRateLimit(texto)
+        return ResponseEntity.ok("Mensagem para queue com rate limit")
+    }
 }
