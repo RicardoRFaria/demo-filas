@@ -10,16 +10,15 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
-import java.lang.Exception
 import java.lang.Thread.sleep
 
 @Configuration
 class QueueWithDelayConsumerConfig(@Value("\${aws.sqs.queuewithdelay.url}") private val queueName: String,
                                    private val sqsClient: SqsClient,
-                                   private val receiver: ReceiverWithDelay) {
+                                   private val receiver: ReceiverWithDelay,
+                                   private val queueUrlService: QueueUrlService) {
 
     @Bean("queuewithdelay")
     fun createQueue() {
@@ -43,8 +42,8 @@ class QueueWithDelayConsumerConfig(@Value("\${aws.sqs.queuewithdelay.url}") priv
     }
 
     fun loopOfMessageGet(threadName: String) {
+        val queueUrl = queueUrlService.getQueueUrl(queueName)
         while (true) {
-            val queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl()
             val receiveMessageRequest = ReceiveMessageRequest.builder().queueUrl(queueUrl).maxNumberOfMessages(10).build()
             val receiveMessage = sqsClient.receiveMessage(receiveMessageRequest)
             if (receiveMessage.hasMessages()) {

@@ -17,7 +17,8 @@ import java.lang.Thread.sleep
 @Configuration
 class QueueSimpleConsumerConfig(@Value("\${aws.sqs.simplesqswithconsuming.url}") private val simpleSqsWithConsuming: String,
                                 private val sqsClient: SqsClient,
-                                private val simpleReceiver: SimpleReceiver) {
+                                private val simpleReceiver: SimpleReceiver,
+                                private val queueUrlService: QueueUrlService) {
 
     @Bean("simplequeue")
     fun createQueue() {
@@ -33,8 +34,8 @@ class QueueSimpleConsumerConfig(@Value("\${aws.sqs.simplesqswithconsuming.url}")
     @EventListener(ApplicationReadyEvent::class)
     fun sqsConsumer() {
         Thread {
+            val queueUrl = queueUrlService.getQueueUrl(simpleSqsWithConsuming)
             while (true) {
-                val queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(simpleSqsWithConsuming).build()).queueUrl()
                 val receiveMessageRequest = ReceiveMessageRequest.builder().queueUrl(queueUrl).maxNumberOfMessages(10).build()
                 val receiveMessage = sqsClient.receiveMessage(receiveMessageRequest)
                 if (receiveMessage.hasMessages()) {

@@ -10,14 +10,17 @@ import java.util.*
 @Repository
 class ItemRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
 
-    fun updateItemPrice(itemId: UUID, newPrice: BigDecimal): Boolean {
+    fun updateItemPrice(itemId: UUID, newPrice: BigDecimal, messageTime: Long? = System.currentTimeMillis()): Boolean {
         val params = mapOf("item_id" to itemId, "new_price" to newPrice)
         return jdbcTemplate.update("UPDATE demofilas.item SET price = :new_price WHERE item_id = :item_id ", params) > 0
     }
 
-    fun updateItemPriceIfLastUpdateIsBefore(itemId: UUID, newPrice: BigDecimal, messageTime: Date): Boolean {
-        val params = mapOf("item_id" to itemId, "new_price" to newPrice, "updated_at" to messageTime)
-        return jdbcTemplate.update("UPDATE demofilas.item SET price = :new_price WHERE item_id = :item_id AND updated_at < :updated_at", params) > 0
+    fun updateItemPriceIfLastUpdateIsBefore(itemId: UUID, newPrice: BigDecimal, messageTime: Long? = System.currentTimeMillis()): Boolean {
+        val params = mapOf("item_id" to itemId, "new_price" to newPrice, "version" to messageTime)
+        return jdbcTemplate.update("""
+            UPDATE demofilas.item 
+            SET price = :new_price, version = :version 
+            WHERE item_id = :item_id AND version < :version """.trimMargin(), params) > 0
     }
 
     @Transactional
@@ -33,7 +36,11 @@ class ItemRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
     }
 
     fun listAllItems(): List<Item> {
-        return jdbcTemplate.query("SELECT * FROM demofilas.item", emptyMap<String, Any>(), ItemRowMapper())
+        return jdbcTemplate.query("SELECT * FROM demofilas.item ORDER BY name", emptyMap<String, Any>(), ItemRowMapper())
+    }
+
+    fun getItemVersion(itemId: UUID): Long? {
+        return jdbcTemplate.queryForObject("SELECT version FROM demofilas.item WHERE item_id = :item_id", mapOf("item_id" to itemId), Long::class.java)
     }
 
 }

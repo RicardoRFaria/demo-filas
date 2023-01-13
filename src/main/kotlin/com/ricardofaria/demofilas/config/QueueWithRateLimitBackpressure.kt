@@ -10,17 +10,16 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
-import java.lang.Exception
 import java.lang.Thread.sleep
 
 @Configuration
 class QueueWithRateLimitBackpressure(@Value("\${aws.sqs.queuewithratelimit}") private val queueName: String,
                                      private val rateLimiter: RateLimiter,
                                      private val sqsClient: SqsClient,
-                                     private val simpleReceiver: SimpleReceiver) {
+                                     private val simpleReceiver: SimpleReceiver,
+                                     private val queueUrlService: QueueUrlService) {
 
     private val rateLimitBackpressure = RateLimitBackpressure(queueName, rateLimiter)
 
@@ -38,12 +37,12 @@ class QueueWithRateLimitBackpressure(@Value("\${aws.sqs.queuewithratelimit}") pr
     @EventListener(ApplicationReadyEvent::class)
     fun sqsConsumer() {
         Thread {
+            val queueUrl = queueUrlService.getQueueUrl(queueName)
             while (true) {
                 while (rateLimitBackpressure.shouldWait()) {
                     println("aguardando para consumir mensagens, pois o backpressure com rate limit nao permitiu prosseguir")
                     sleep(5000)
                 }
-                val queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl()
                 val receiveMessageRequest = ReceiveMessageRequest.builder().queueUrl(queueUrl).maxNumberOfMessages(10).build()
                 val receiveMessage = sqsClient.receiveMessage(receiveMessageRequest)
                 if (receiveMessage.hasMessages()) {

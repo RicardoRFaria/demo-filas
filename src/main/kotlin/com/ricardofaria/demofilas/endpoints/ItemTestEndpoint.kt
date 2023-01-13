@@ -1,26 +1,33 @@
 package com.ricardofaria.demofilas.endpoints
 
-import com.ricardofaria.demofilas.queuesender.MessageSender
+import com.ricardofaria.demofilas.queuesender.ItemMessageSender
 import com.ricardofaria.demofilas.restmodels.Item
+import com.ricardofaria.demofilas.restmodels.ItemPriceUpdate
 import com.ricardofaria.demofilas.service.ItemService
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.*
+import java.util.*
 
 
-@Controller("/items")
-class ItemTestEndpoint(private val itemService: ItemService) {
+@RestController
+@RequestMapping(value = ["/items"], produces = [MediaType.APPLICATION_JSON_VALUE])
+class ItemTestEndpoint(private val itemService: ItemService, private val itemMessageSender: ItemMessageSender) {
 
-    @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun listItems(): ResponseEntity<List<Item>> {
-        return ResponseEntity.ok(itemService.listAllItems())
+    @GetMapping
+    fun listItems(): List<Item> {
+        return itemService.listAllItems()
     }
 
-    @PostMapping("/send-simple-message", produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun sendSimpleMessage(@RequestParam texto: String): ResponseEntity<String> {
-        return ResponseEntity.ok("Mensagem enviada")
+    @PatchMapping("/price/{itemId}")
+    fun sendSimpleMessage(@PathVariable itemId: UUID, @RequestBody itemPriceUpdate: ItemPriceUpdate): ResponseEntity<String> {
+        itemMessageSender.sendItemPriceUpdateMessage(itemId, itemPriceUpdate.price, itemPriceUpdate.devoFalhar, itemPriceUpdate.versionCheckMode)
+        return ResponseEntity.ok("Mensagem enviada para a fila de update de preço")
+    }
+
+    @GetMapping("/processmydlq")
+    fun processMyDlq(): ResponseEntity<String> {
+        itemMessageSender.processMyDlq()
+        return ResponseEntity.ok("Mensagens da DLQ processadas com sucesso")
     }
 }

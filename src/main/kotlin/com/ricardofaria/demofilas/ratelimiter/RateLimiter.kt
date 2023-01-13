@@ -14,7 +14,7 @@ class RateLimiter(private val qualquerInterfaceExterna: QualquerInterfaceExterna
     fun canProceed(queueName: String): Boolean {
         val key = buildKey(queueName)
         val valor = qualquerInterfaceExterna.getValue(key)
-        println("Verificando o rate limit da chave $key, valor atual: $valor")
+        //println("Verificando o rate limit da chave $key, valor atual: $valor")
         return valor <= getQueueRateLimitThreshold()
     }
 

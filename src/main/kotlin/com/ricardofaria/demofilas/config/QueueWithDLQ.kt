@@ -18,7 +18,8 @@ import java.lang.Thread.sleep
 class QueueWithDLQ(@Value("\${aws.sqs.queuewithdlq.url}") private val queueName: String,
                    private val sqsClient: SqsClient,
                    private val receiverThatDoesntFail: ReceiverWithDelay,
-                   private val receiverThatFails: ReceiverThatFails) {
+                   private val receiverThatFails: ReceiverThatFails,
+                   private val queueUrlService: QueueUrlService) {
 
     @Bean("queuewithdlq")
     fun createQueue() {
@@ -42,8 +43,8 @@ class QueueWithDLQ(@Value("\${aws.sqs.queuewithdlq.url}") private val queueName:
     @EventListener(ApplicationReadyEvent::class)
     fun sqsConsumer() {
         Thread {
+            val queueUrl = queueUrlService.getQueueUrl(queueName)
             while (true) {
-                val queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl()
                 val receiveMessageRequest = ReceiveMessageRequest.builder().queueUrl(queueUrl).maxNumberOfMessages(10).build()
                 val receiveMessage = sqsClient.receiveMessage(receiveMessageRequest)
                 if (receiveMessage.hasMessages()) {
@@ -66,8 +67,8 @@ class QueueWithDLQ(@Value("\${aws.sqs.queuewithdlq.url}") private val queueName:
     @EventListener(ApplicationReadyEvent::class)
     fun sqsConsumerForDLQ() {
         Thread {
+            val queueUrl = queueUrlService.getQueueUrl("${queueName}_dlq")
             while (true) {
-                val queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName("${queueName}_dlq").build()).queueUrl()
                 val receiveMessageRequest = ReceiveMessageRequest.builder().queueUrl(queueUrl).maxNumberOfMessages(10).build()
                 val receiveMessage = sqsClient.receiveMessage(receiveMessageRequest)
                 if (receiveMessage.hasMessages()) {
