@@ -1,6 +1,10 @@
 # Demo Filas
 
-Inicie o sistema de filas com `docker-compose up`
+1. Inicie o docker com `docker-compose up`
+2. Execute o comando para iniciar a aplicação `mvnw spring-boot:run`
+
+# Collection de postman
+Você pode importar a collection do postman que existe aqui no projeto através do arquivo `demo-filas.postman_collection.json`
 
 ## Requests para as filas
 Para o endpoint de envio de mensagem simples

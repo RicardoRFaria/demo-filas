@@ -1,0 +1,218 @@
+{
+	"info": {
+		"_postman_id": "553050e3-f8e7-4a7f-9743-9e6d86be6e24",
+		"name": "demo-filas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34345"
+	},
+	"item": [
+		{
+			"name": "Send simple message",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/send-simple-message?texto=meu texto de bom dia",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"send-simple-message"
+					],
+					"query": [
+						{
+							"key": "texto",
+							"value": "meu texto de bom dia"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send message with waiting",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/send-message-for-queue-with-waiting?texto=meu-texto-que-nunca-finaliza&numeroDeParadas=7",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"send-message-for-queue-with-waiting"
+					],
+					"query": [
+						{
+							"key": "texto",
+							"value": "meu-texto-que-nunca-finaliza"
+						},
+						{
+							"key": "numeroDeParadas",
+							"value": "7"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send message for queue with dlq",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/send-message-for-queue-with-dlq?texto=%23%23%23%23%23%23%23%23%23%23%23%23%23%23%23%23&numeroDeParadas=5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"send-message-for-queue-with-dlq"
+					],
+					"query": [
+						{
+							"key": "texto",
+							"value": "################"
+						},
+						{
+							"key": "numeroDeParadas",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send message with backpressure",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/send-message-for-queue-with-health-check-backpressure?texto=Mensagemcombackpressure",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"send-message-for-queue-with-health-check-backpressure"
+					],
+					"query": [
+						{
+							"key": "texto",
+							"value": "Mensagemcombackpressure"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send message with Rate Limit",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/send-message-for-queue-with-rate-limit?texto=Mensagemcomratelimit1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"send-message-for-queue-with-rate-limit"
+					],
+					"query": [
+						{
+							"key": "texto",
+							"value": "Mensagemcomratelimit1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Items",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/items",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH Item price",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"price\": \"24\",\r\n    \"devoFalhar\": false,\r\n    //\"versionCheckMode\": \"NO_CHECK\"\r\n    //\"versionCheckMode\": \"QUEUE_CHECK\"\r\n    \"versionCheckMode\": \"DB_CHECK\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/items/price/:itemId",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"items",
+						"price",
+						":itemId"
+					],
+					"variable": [
+						{
+							"key": "itemId",
+							"value": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Item - Process My DLQ",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/items/processmydlq",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"items",
+						"processmydlq"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
