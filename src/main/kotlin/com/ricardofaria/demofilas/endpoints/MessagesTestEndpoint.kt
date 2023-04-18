@@ -37,6 +37,7 @@ class MessagesTestEndpoint(private val messageSender: MessageSender) {
 
     @GetMapping("/send-message-for-queue-with-rate-limit", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun sendMessageForQueueWithRateLimit(@RequestParam texto: String): ResponseEntity<String> {
+        println("Enviando mensagem com texto $texto")
         messageSender.sendMessageForQueueWithRateLimit(texto)
         return ResponseEntity.ok("Mensagem para queue com rate limit")
     }
